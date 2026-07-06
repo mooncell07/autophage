@@ -13,7 +13,7 @@ pub fn run() {
             Ok(())
         })
         .invoke_handler(tauri::generate_handler![
-            commands::load_binary,
+            commands::start_session,
             commands::analyze_binary,
             commands::get_information,
             commands::get_functions,

@@ -22,15 +22,16 @@ impl Session {
             exepath: self.exepath.clone(),
             ..Default::default()
         };
-        self.rzp = Some(
-            RzPipe::spawn(filepath.to_string_lossy(), Some(opts)).map_err(|e| {
-                BackendError::Rizin(format!(
-                    "Child Process `{}` failed to spawn: {}",
-                    self.exepath,
-                    e.to_string()
-                ))
-            })?,
-        );
+        let rzp = RzPipe::spawn(filepath.to_string_lossy(), Some(opts)).map_err(|e| {
+            BackendError::Rizin(format!(
+                "Child Process `{}` failed to spawn: {}",
+                self.exepath,
+                e.to_string()
+            ))
+        })?;
+
+        self.rzp = Some(rzp);
+
         Ok(())
     }
 
@@ -39,9 +40,11 @@ impl Session {
             .rzp
             .as_mut()
             .ok_or(BackendError::Rizin("Rizin Instance Uninitiated".into()))?;
+
         let result = rzp
             .cmd(command)
             .map_err(|e| BackendError::Command(e.to_string()))?;
+
         Ok(result.to_string())
     }
 
