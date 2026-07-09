@@ -1,0 +1,11 @@
+[package]
+name = "autophage"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+anyhow = "1.0.103"
+ghidra-cli = "0.2.0"
+ratatui = "0.30.2"
+serde_json = "1.0.150"
+thiserror = "2.0.18"
