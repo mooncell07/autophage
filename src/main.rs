@@ -1,10 +1,12 @@
 use crate::adapter::Adapter;
-
+use crate::ui::ui_main;
 mod adapter;
+mod ui;
 
 fn app() -> anyhow::Result<()> {
     let adapter = Adapter::new("myproject")?;
-    adapter.close();
+    ui_main(adapter);
+
     Ok(())
 }
 

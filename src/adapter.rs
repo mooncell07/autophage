@@ -59,6 +59,14 @@ impl Adapter {
         self.bridge_client.program_info()
     }
 
+    pub fn get_disassembly(
+        &self,
+        address: &str,
+        instr: usize,
+    ) -> anyhow::Result<serde_json::Value> {
+        self.bridge_client.disasm(address, Some(instr))
+    }
+
     pub fn close(&self) {
         let _ = self.bridge_client.shutdown();
     }
