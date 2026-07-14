@@ -1,6 +1,9 @@
 use std::io;
 
+use super::adapter::Adapter;
+use super::models::Disassembly;
 use crossterm::event::{self, Event, KeyCode, KeyEvent, KeyEventKind};
+use opaline::{Theme, load_by_name};
 use ratatui::{
     DefaultTerminal, Frame,
     buffer::Buffer,
@@ -10,11 +13,8 @@ use ratatui::{
     text::Line,
     widgets::{Block, Cell, Row, Table, Widget},
 };
-
-use super::adapter::Adapter;
-use super::models::Disassembly;
-
 pub struct UserInterface {
+    theme: Theme,
     adapter: Adapter,
     disasm: Disassembly,
     exit: bool,
@@ -31,9 +31,21 @@ impl Widget for &UserInterface {
             .iter()
             .map(|instr| {
                 Row::new(vec![
-                    Cell::from(instr.address.as_str()),
-                    Cell::from(instr.bytes.as_str()),
-                    Cell::from(instr.mnemonic.as_str()),
+                    Cell::from(self.theme.span("primary", instr.address.as_str())),
+                    Cell::from(
+                        self.theme.span(
+                            "line_number",
+                            instr
+                                .bytes
+                                .as_bytes()
+                                .chunks(2)
+                                .map(|chunk| std::str::from_utf8(chunk).unwrap())
+                                .collect::<Vec<&str>>()
+                                .join(" "),
+                        ),
+                    ),
+                    Cell::from(self.theme.span("info_style", instr.mnemonic.as_str())),
+                    Cell::from(self.theme.span("warning_style", instr.operands.join(","))),
                 ])
             })
             .collect();
@@ -49,7 +61,8 @@ impl Widget for &UserInterface {
         let widths = [
             Constraint::Length(max_address_len as u16),
             Constraint::Length(15),
-            Constraint::Min(20),
+            Constraint::Length(5),
+            Constraint::Length(5),
         ];
 
         Table::new(rows, widths)
@@ -62,6 +75,7 @@ impl Widget for &UserInterface {
 impl UserInterface {
     pub fn new(adapter: Adapter) -> Self {
         Self {
+            theme: load_by_name("rose-pine").unwrap(),
             adapter,
             disasm: Disassembly::default(),
             exit: false,
