@@ -90,7 +90,7 @@ impl UserInterface {
     fn handle_key_event(&mut self, key_event: KeyEvent) {
         match key_event.code {
             KeyCode::Char('q') => self.exit(),
-            KeyCode::Down => self.run_disasm(),
+            KeyCode::Down => self.get_disassembly(),
             _ => {}
         }
     }
@@ -99,9 +99,8 @@ impl UserInterface {
         self.adapter.close();
     }
 
-    fn run_disasm(&mut self) {
-        let res = self.adapter.get_disassembly("140001000", 10).unwrap();
-        let disasm = serde_json::from_value::<Disassembly>(res).unwrap();
-        self.disasm = disasm;
+    fn get_disassembly(&mut self) {
+        let res = self.adapter.get_disassembly("entry", 10).unwrap();
+        self.disasm = res;
     }
 }

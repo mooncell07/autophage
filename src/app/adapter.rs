@@ -1,5 +1,6 @@
 // An Adapter for wrapping the inner `BrideClient` for the purpose of handling a Session.
 
+use super::models::Disassembly;
 use anyhow;
 use ghidra_cli::config::Config;
 use ghidra_cli::ghidra::bridge::{self, BridgeStartMode};
@@ -59,12 +60,9 @@ impl Adapter {
         self.bridge_client.program_info()
     }
 
-    pub fn get_disassembly(
-        &self,
-        address: &str,
-        instr: usize,
-    ) -> anyhow::Result<serde_json::Value> {
-        self.bridge_client.disasm(address, Some(instr))
+    pub fn get_disassembly(&self, address: &str, instr: usize) -> anyhow::Result<Disassembly> {
+        let res = self.bridge_client.disasm(address, Some(instr))?;
+        Ok(serde_json::from_value::<Disassembly>(res).unwrap())
     }
 
     pub fn close(&self) {
