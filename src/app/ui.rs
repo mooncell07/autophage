@@ -12,27 +12,22 @@ use ratatui::{
 };
 
 use super::adapter::Adapter;
+use super::models::Disassembly;
 
-#[derive(Clone, Debug)]
-pub struct Instruction {
-    pub address: String,
-    pub bytes: String,
-    pub mnemonic: String,
-}
-
-pub struct App {
+pub struct UserInterface {
     adapter: Adapter,
-    disasm: Vec<Instruction>,
+    disasm: Disassembly,
     exit: bool,
 }
 
-impl Widget for &App {
+impl Widget for &UserInterface {
     fn render(self, area: Rect, buf: &mut Buffer) {
         let title = Line::from(" Disassembly Viewer ".bold());
         let block = Block::bordered().title(title).border_set(border::PLAIN);
 
         let rows: Vec<Row> = self
             .disasm
+            .instructions
             .iter()
             .map(|instr| {
                 Row::new(vec![
@@ -45,6 +40,7 @@ impl Widget for &App {
 
         let max_address_len = self
             .disasm
+            .instructions
             .iter()
             .map(|instr| instr.address.len())
             .max()
@@ -63,7 +59,14 @@ impl Widget for &App {
     }
 }
 
-impl App {
+impl UserInterface {
+    pub fn new(adapter: Adapter) -> Self {
+        Self {
+            adapter,
+            disasm: Disassembly::default(),
+            exit: false,
+        }
+    }
     pub fn run(&mut self, terminal: &mut DefaultTerminal) -> io::Result<()> {
         while !self.exit {
             terminal.draw(|frame| self.draw(frame))?;
@@ -98,29 +101,7 @@ impl App {
 
     fn run_disasm(&mut self) {
         let res = self.adapter.get_disassembly("140001000", 10).unwrap();
-        if let Some(instrs) = res["instructions"].as_array() {
-            for instr in instrs {
-                let address = instr["address"].as_str().unwrap().to_string();
-                let bytes = instr["bytes"].as_str().unwrap().to_string();
-                let mnemonic = instr["mnemonic"].as_str().unwrap().to_string();
-                self.disasm.push(Instruction {
-                    address,
-                    bytes,
-                    mnemonic,
-                });
-            }
-        }
+        let disasm = serde_json::from_value::<Disassembly>(res).unwrap();
+        self.disasm = disasm;
     }
-}
-
-pub fn ui_main(adapter: Adapter) {
-    ratatui::run(|terminal| {
-        App {
-            adapter,
-            disasm: Vec::new(),
-            exit: false,
-        }
-        .run(terminal)
-    })
-    .unwrap()
 }

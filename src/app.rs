@@ -1,11 +1,14 @@
 mod adapter;
+mod models;
 mod ui;
 use adapter::Adapter;
-use ui::ui_main;
+use ui::UserInterface;
 
 pub fn run() -> anyhow::Result<()> {
     let adapter = Adapter::new("myproject")?;
-    ui_main(adapter);
+    let mut ui = UserInterface::new(adapter);
+
+    ratatui::run(|terminal| ui.run(terminal))?;
 
     Ok(())
 }
