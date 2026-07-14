@@ -1,17 +1,7 @@
-use crate::adapter::Adapter;
-use crate::ui::ui_main;
-mod adapter;
-mod ui;
-
-fn app() -> anyhow::Result<()> {
-    let adapter = Adapter::new("myproject")?;
-    ui_main(adapter);
-
-    Ok(())
-}
+mod app;
 
 fn main() {
-    if let Err(err) = app() {
+    if let Err(err) = app::run() {
         eprintln!("Error: {:#}", err);
         std::process::exit(1);
     }

@@ -11,7 +11,7 @@ use ratatui::{
     widgets::{Block, Cell, Row, Table, Widget},
 };
 
-use crate::adapter::Adapter;
+use super::adapter::Adapter;
 
 #[derive(Clone, Debug)]
 pub struct Instruction {
