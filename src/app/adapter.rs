@@ -1,5 +1,7 @@
 // An Adapter for wrapping the inner `BrideClient` for the purpose of handling a Session.
 
+use crate::app::models::FunctionList;
+
 use super::models::Disassembly;
 use anyhow;
 use ghidra_cli::config::Config;
@@ -37,8 +39,9 @@ impl Adapter {
         })
     }
 
-    pub fn list_functions(&self) -> anyhow::Result<serde_json::Value> {
-        self.bridge_client.list_functions(None, None)
+    pub fn list_functions(&self) -> anyhow::Result<FunctionList> {
+        let res = self.bridge_client.list_functions(None, None)?;
+        Ok(serde_json::from_value::<FunctionList>(res).unwrap())
     }
 
     pub fn list_strings(&self) -> anyhow::Result<serde_json::Value> {
