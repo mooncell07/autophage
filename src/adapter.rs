@@ -1,6 +1,6 @@
 // An Adapter for wrapping the inner `BrideClient` for the purpose of handling a Session.
 
-use crate::app::models::FunctionList;
+use crate::models::FunctionList;
 
 use super::models::Disassembly;
 use anyhow;

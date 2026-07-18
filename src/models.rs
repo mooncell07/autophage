@@ -1,6 +1,7 @@
 use serde::Deserialize;
+use serde::Serialize;
 
-#[derive(Clone, Debug, Deserialize)]
+#[derive(Debug, Deserialize, PartialEq, Eq)]
 pub struct Instruction {
     pub address: String,
     pub bytes: String,
@@ -8,13 +9,13 @@ pub struct Instruction {
     pub operands: Vec<String>,
 }
 
-#[derive(Debug, Deserialize, Default)]
+#[derive(Debug, Deserialize, Default, PartialEq, Eq)]
 pub struct Disassembly {
     pub count: i64,
     pub instructions: Vec<Instruction>,
 }
 
-#[derive(Clone, Debug, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, PartialEq, Eq)]
 pub struct Function {
     pub address: String,
     pub calling_convention: String,
@@ -25,7 +26,7 @@ pub struct Function {
     pub size: i64,
 }
 
-#[derive(Debug, Deserialize, Default)]
+#[derive(Debug, Serialize, Deserialize, Default, PartialEq, Eq)]
 pub struct FunctionList {
     pub count: i64,
     pub functions: Vec<Function>,
