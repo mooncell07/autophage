@@ -31,3 +31,11 @@ pub struct FunctionList {
     pub count: i64,
     pub functions: Vec<Function>,
 }
+
+#[derive(Debug, Serialize, Deserialize, Default, PartialEq, Eq)]
+pub struct Decompilation {
+    pub address: String,
+    pub code: String,
+    pub name: String,
+    pub signature: String,
+}

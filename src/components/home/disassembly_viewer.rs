@@ -34,7 +34,7 @@ impl DisassemblyViewer {
     }
 
     pub fn get_widget(&self) -> Table<'_> {
-        let title = Line::from(" Disassembly Viewer ");
+        let title = Line::from(" Disassembly ");
         let block = Block::bordered().title(title).border_set(border::PLAIN);
 
         let rows: Vec<Row> = self

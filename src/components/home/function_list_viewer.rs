@@ -35,7 +35,7 @@ impl FunctionListViewer {
                 .map(|f| f.name.clone())
                 .collect::<Vec<String>>(),
         )
-        .block(Block::default().title("Functions").borders(Borders::ALL))
+        .block(Block::default().title(" Functions ").borders(Borders::ALL))
         .highlight_symbol("-> ")
     }
 }

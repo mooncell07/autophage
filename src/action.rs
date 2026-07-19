@@ -1,4 +1,4 @@
-use crate::models::{Disassembly, FunctionList};
+use crate::models::{Decompilation, Disassembly, FunctionList};
 use std::sync::Arc;
 use strum::Display;
 
@@ -16,9 +16,7 @@ pub enum Action {
 
     InitializeHome,
 
-    FetchFunctionList,
     ResultFunctionList(Arc<FunctionList>),
-
-    FetchDisassembly,
     ResultDisassembly(Arc<Disassembly>),
+    ResultDecompilation(Arc<Decompilation>),
 }

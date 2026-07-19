@@ -1,6 +1,6 @@
 // An Adapter for wrapping the inner `BrideClient` for the purpose of handling a Session.
 
-use crate::models::FunctionList;
+use crate::models::{Decompilation, FunctionList};
 
 use super::models::Disassembly;
 use anyhow;
@@ -68,6 +68,12 @@ impl Adapter {
         Ok(serde_json::from_value::<Disassembly>(res).unwrap())
     }
 
+    pub fn get_decompilation(&self, address: &str) -> anyhow::Result<Decompilation> {
+        let res = self
+            .bridge_client
+            .decompile(address.to_string(), true, true)?;
+        Ok(serde_json::from_value::<Decompilation>(res).unwrap())
+    }
     pub fn close(&self) {
         let _ = self.bridge_client.shutdown();
     }

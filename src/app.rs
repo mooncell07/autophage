@@ -108,6 +108,7 @@ impl App {
                 Action::InitializeHome => {
                     self.load_function_list();
                     self.load_disassembly();
+                    self.load_decompilation();
                 }
                 Action::Tick => {
                     self.last_tick_key_events.drain(..);
@@ -160,5 +161,12 @@ impl App {
         let _ = self
             .action_tx
             .send(Action::ResultDisassembly(Arc::new(res)));
+    }
+
+    fn load_decompilation(&self) {
+        let res = self.adapter.get_decompilation("entry").unwrap();
+        let _ = self
+            .action_tx
+            .send(Action::ResultDecompilation(Arc::new(res)));
     }
 }

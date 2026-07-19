@@ -1,7 +1,9 @@
+mod decompilation_viewer;
 mod disassembly_viewer;
 mod function_list_viewer;
 
 use crossterm::event::KeyCode;
+use decompilation_viewer::DecompilationViewer;
 use disassembly_viewer::DisassemblyViewer;
 use function_list_viewer::FunctionListViewer;
 
@@ -24,6 +26,7 @@ pub struct Home {
     focused_viewer: Viewer,
     function_list_viewer: FunctionListViewer,
     disassembly_viewer: DisassemblyViewer,
+    decompilation_viewer: DecompilationViewer,
     command_tx: Option<UnboundedSender<Action>>,
 }
 
@@ -72,7 +75,8 @@ impl Component for Home {
     fn update(&mut self, action: Action) -> color_eyre::Result<Option<Action>> {
         match action {
             Action::ResultFunctionList(fl) => self.function_list_viewer.update(&fl),
-            Action::ResultDisassembly(d) => self.disassembly_viewer.update(&d),
+            Action::ResultDisassembly(dism) => self.disassembly_viewer.update(&dism),
+            Action::ResultDecompilation(decomp) => self.decompilation_viewer.update(&decomp),
             _ => {}
         }
         Ok(None)
@@ -83,14 +87,18 @@ impl Component for Home {
 
         let body_area = body.inner(area);
 
-        let [function_list_area, disassembly_area] = body_area.layout(&Layout::horizontal([
-            Constraint::Percentage(25),
-            Constraint::Percentage(50),
-        ]));
+        let [function_list_area, disassembly_area, remaining_area] =
+            body_area.layout(&Layout::horizontal([
+                Constraint::Percentage(15),
+                Constraint::Percentage(50),
+                Constraint::Percentage(35),
+            ]));
 
         let function_list_widget = self.function_list_viewer.get_widget();
 
         let disassembly_widget = self.disassembly_viewer.get_widget();
+
+        let decompilation_widget = self.decompilation_viewer.get_widget();
         frame.render_stateful_widget(
             &function_list_widget,
             function_list_area,
@@ -98,6 +106,7 @@ impl Component for Home {
         );
 
         frame.render_widget(&disassembly_widget, disassembly_area);
+        frame.render_widget(&decompilation_widget, remaining_area);
 
         Ok(())
     }
