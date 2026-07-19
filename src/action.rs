@@ -14,6 +14,8 @@ pub enum Action {
     Error(String),
     Help,
 
+    InitializeHome,
+
     FetchFunctionList,
     ResultFunctionList(Arc<FunctionList>),
 

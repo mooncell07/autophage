@@ -28,6 +28,7 @@ use tracing::error;
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub enum Event {
     Init,
+    HomeInit,
     Quit,
     Error,
     Closed,
@@ -117,6 +118,10 @@ impl Tui {
         event_tx
             .send(Event::Init)
             .expect("failed to send init event");
+
+        event_tx
+            .send(Event::HomeInit)
+            .expect("failed to send home init event");
         loop {
             let event = tokio::select! {
                 _ = cancellation_token.cancelled() => {

@@ -1,14 +1,12 @@
 use std::sync::Arc;
 
-use ratatui::{
-    style::Modifier,
-    widgets::{Block, List},
-};
+use ratatui::widgets::{Block, Borders, List, ListState};
 
 use crate::models::FunctionList;
 
 pub struct FunctionListViewer {
     function_list: Arc<FunctionList>,
+    pub state: ListState,
 }
 
 impl Default for FunctionListViewer {
@@ -21,8 +19,10 @@ impl FunctionListViewer {
     pub fn new() -> Self {
         return Self {
             function_list: FunctionList::default().into(),
+            state: ListState::default(),
         };
     }
+
     pub fn update(&mut self, function_list: &Arc<FunctionList>) {
         self.function_list = Arc::clone(function_list);
     }
@@ -35,8 +35,7 @@ impl FunctionListViewer {
                 .map(|f| f.name.clone())
                 .collect::<Vec<String>>(),
         )
-        .block(Block::bordered().title(" Function List "))
-        .highlight_style(Modifier::REVERSED)
-        .highlight_symbol("> ")
+        .block(Block::default().title("Functions").borders(Borders::ALL))
+        .highlight_symbol("-> ")
     }
 }

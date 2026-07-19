@@ -177,6 +177,7 @@ dependencies = [
  "opaline",
  "pretty_assertions",
  "ratatui",
+ "ratatui-hypertile",
  "serde",
  "serde_json",
  "signal-hook 0.4.4",
@@ -3561,6 +3562,15 @@ dependencies = [
  "crossterm 0.29.0",
  "instability",
  "ratatui-core",
+]
+
+[[package]]
+name = "ratatui-hypertile"
+version = "0.4.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "d4695784e403ace739a2d29e9d6e840518fbab41bb7759a4855e8f6d24e4ba8f"
+dependencies = [
+ "ratatui",
 ]
 
 [[package]]

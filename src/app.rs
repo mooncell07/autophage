@@ -80,6 +80,7 @@ impl App {
         };
         let action_tx = self.action_tx.clone();
         match event {
+            Event::HomeInit => action_tx.send(Action::InitializeHome)?,
             Event::Quit => action_tx.send(Action::Quit)?,
             Event::Tick => action_tx.send(Action::Tick)?,
             Event::Render => action_tx.send(Action::Render)?,
@@ -104,6 +105,10 @@ impl App {
                 debug!("{action:?}");
             }
             match action {
+                Action::InitializeHome => {
+                    self.send_function_list();
+                    self.send_disassembly();
+                }
                 Action::Tick => {
                     self.last_tick_key_events.drain(..);
                 }
@@ -113,19 +118,6 @@ impl App {
                 Action::ClearScreen => tui.terminal.clear()?,
                 Action::Resize(w, h) => self.handle_resize(tui, w, h)?,
                 Action::Render => self.render(tui)?,
-                Action::FetchFunctionList => {
-                    let res = self.adapter.list_functions().unwrap();
-                    let _ = self
-                        .action_tx
-                        .send(Action::ResultFunctionList(Arc::new(res)));
-                }
-
-                Action::FetchDisassembly => {
-                    let res = self.adapter.get_disassembly("entry", 10).unwrap();
-                    let _ = self
-                        .action_tx
-                        .send(Action::ResultDisassembly(Arc::new(res)));
-                }
                 _ => {}
             }
             for component in self.components.iter_mut() {
@@ -154,5 +146,19 @@ impl App {
             }
         })?;
         Ok(())
+    }
+
+    fn send_function_list(&self) {
+        let res = self.adapter.list_functions().unwrap();
+        let _ = self
+            .action_tx
+            .send(Action::ResultFunctionList(Arc::new(res)));
+    }
+
+    fn send_disassembly(&self) {
+        let res = self.adapter.get_disassembly("entry", 10).unwrap();
+        let _ = self
+            .action_tx
+            .send(Action::ResultDisassembly(Arc::new(res)));
     }
 }
