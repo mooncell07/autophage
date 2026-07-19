@@ -39,23 +39,23 @@ impl Adapter {
         })
     }
 
-    pub fn list_functions(&self) -> anyhow::Result<FunctionList> {
+    pub fn get_function_list(&self) -> anyhow::Result<FunctionList> {
         let res = self.bridge_client.list_functions(None, None)?;
         Ok(serde_json::from_value::<FunctionList>(res).unwrap())
     }
 
-    pub fn list_strings(&self) -> anyhow::Result<serde_json::Value> {
+    pub fn get_strings_list(&self) -> anyhow::Result<serde_json::Value> {
         self.bridge_client.list_strings(None, None)
     }
 
-    pub fn list_imports(&self) -> anyhow::Result<serde_json::Value> {
+    pub fn get_imports_list(&self) -> anyhow::Result<serde_json::Value> {
         self.bridge_client.list_imports()
     }
-    pub fn list_exports(&self) -> anyhow::Result<serde_json::Value> {
+    pub fn get_exports_list(&self) -> anyhow::Result<serde_json::Value> {
         self.bridge_client.list_exports()
     }
 
-    pub fn list_programs(&self) -> anyhow::Result<serde_json::Value> {
+    pub fn get_programs_list(&self) -> anyhow::Result<serde_json::Value> {
         self.bridge_client.list_programs()
     }
 

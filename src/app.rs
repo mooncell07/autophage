@@ -8,7 +8,7 @@ use tracing::debug;
 use crate::{
     action::Action,
     adapter::Adapter,
-    components::{Component, fps::FpsCounter, home::Home},
+    components::{Component, home::Home},
     tui::{Event, Tui},
 };
 
@@ -31,7 +31,7 @@ impl App {
         Ok(Self {
             tick_rate,
             frame_rate,
-            components: vec![Box::new(Home::new()), Box::new(FpsCounter::default())],
+            components: vec![Box::new(Home::new())],
             should_quit: false,
             should_suspend: false,
             last_tick_key_events: Vec::new(),
@@ -106,8 +106,8 @@ impl App {
             }
             match action {
                 Action::InitializeHome => {
-                    self.send_function_list();
-                    self.send_disassembly();
+                    self.load_function_list();
+                    self.load_disassembly();
                 }
                 Action::Tick => {
                     self.last_tick_key_events.drain(..);
@@ -148,14 +148,14 @@ impl App {
         Ok(())
     }
 
-    fn send_function_list(&self) {
-        let res = self.adapter.list_functions().unwrap();
+    fn load_function_list(&self) {
+        let res = self.adapter.get_function_list().unwrap();
         let _ = self
             .action_tx
             .send(Action::ResultFunctionList(Arc::new(res)));
     }
 
-    fn send_disassembly(&self) {
+    fn load_disassembly(&self) {
         let res = self.adapter.get_disassembly("entry", 10).unwrap();
         let _ = self
             .action_tx
