@@ -16,6 +16,7 @@ use crate::action::Action;
 #[derive(Default, Debug)]
 pub enum Viewer {
     FunctionListViewer,
+    DecompilationViewer,
 
     #[default]
     DisassemblyViewer,
@@ -46,12 +47,23 @@ impl Component for Home {
         &mut self,
         key: crossterm::event::KeyEvent,
     ) -> color_eyre::Result<Option<Action>> {
+        let mut action: Option<Action> = None;
+
         match key.code {
-            KeyCode::Tab => {
+            KeyCode::Char('h') => {
+                self.focused_viewer = match self.focused_viewer {
+                    Viewer::DecompilationViewer => Viewer::DisassemblyViewer,
+                    Viewer::DisassemblyViewer => Viewer::FunctionListViewer,
+                    Viewer::FunctionListViewer => Viewer::FunctionListViewer,
+                };
+            }
+
+            KeyCode::Char('l') => {
                 self.focused_viewer = match self.focused_viewer {
                     Viewer::FunctionListViewer => Viewer::DisassemblyViewer,
-                    Viewer::DisassemblyViewer => Viewer::FunctionListViewer,
-                };
+                    Viewer::DisassemblyViewer => Viewer::DecompilationViewer,
+                    Viewer::DecompilationViewer => Viewer::DecompilationViewer,
+                }
             }
 
             KeyCode::Char('j') => match self.focused_viewer {
@@ -67,10 +79,19 @@ impl Component for Home {
                 }
                 _ => {}
             },
+
+            KeyCode::Enter => match self.focused_viewer {
+                Viewer::FunctionListViewer => {
+                    let index = self.function_list_viewer.state.selected_mut().unwrap();
+                    let address = self.function_list_viewer.get_function_address(index);
+                    action = Some(Action::RequestDecompilation(Some(address)));
+                }
+                _ => {}
+            },
             _ => {}
         };
 
-        Ok(None)
+        Ok(action)
     }
     fn update(&mut self, action: Action) -> color_eyre::Result<Option<Action>> {
         match action {

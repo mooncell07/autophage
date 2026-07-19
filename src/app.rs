@@ -108,7 +108,12 @@ impl App {
                 Action::InitializeHome => {
                     self.load_function_list();
                     self.load_disassembly();
-                    self.load_decompilation();
+                    self.load_decompilation(String::from("entry"));
+                }
+                Action::RequestDecompilation(ref addr) => {
+                    if let Some(a) = addr.clone() {
+                        self.load_decompilation(a);
+                    }
                 }
                 Action::Tick => {
                     self.last_tick_key_events.drain(..);
@@ -163,8 +168,8 @@ impl App {
             .send(Action::ResultDisassembly(Arc::new(res)));
     }
 
-    fn load_decompilation(&self) {
-        let res = self.adapter.get_decompilation("entry").unwrap();
+    fn load_decompilation(&self, address: String) {
+        let res = self.adapter.get_decompilation(address).unwrap();
         let _ = self
             .action_tx
             .send(Action::ResultDecompilation(Arc::new(res)));

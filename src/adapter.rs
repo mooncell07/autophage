@@ -68,10 +68,8 @@ impl Adapter {
         Ok(serde_json::from_value::<Disassembly>(res).unwrap())
     }
 
-    pub fn get_decompilation(&self, address: &str) -> anyhow::Result<Decompilation> {
-        let res = self
-            .bridge_client
-            .decompile(address.to_string(), true, true)?;
+    pub fn get_decompilation(&self, address: String) -> anyhow::Result<Decompilation> {
+        let res = self.bridge_client.decompile(address, true, true)?;
         Ok(serde_json::from_value::<Decompilation>(res).unwrap())
     }
     pub fn close(&self) {

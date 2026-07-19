@@ -19,4 +19,6 @@ pub enum Action {
     ResultFunctionList(Arc<FunctionList>),
     ResultDisassembly(Arc<Disassembly>),
     ResultDecompilation(Arc<Decompilation>),
+
+    RequestDecompilation(Option<String>),
 }

@@ -2,7 +2,7 @@ use std::sync::Arc;
 
 use ratatui::widgets::{Block, Borders, List, ListState};
 
-use crate::models::FunctionList;
+use crate::models::{Function, FunctionList};
 
 pub struct FunctionListViewer {
     function_list: Arc<FunctionList>,
@@ -25,6 +25,10 @@ impl FunctionListViewer {
 
     pub fn update(&mut self, function_list: &Arc<FunctionList>) {
         self.function_list = Arc::clone(function_list);
+    }
+
+    pub fn get_function_address(&self, index: usize) -> String {
+        self.function_list.functions[index].address.clone()
     }
 
     pub fn get_widget(&self) -> List<'static> {
