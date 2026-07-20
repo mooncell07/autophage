@@ -22,12 +22,13 @@ pub struct App {
     action_tx: mpsc::UnboundedSender<Action>,
     action_rx: mpsc::UnboundedReceiver<Action>,
 
-    adapter: Adapter,
+    adapter: Arc<Adapter>,
 }
 
 impl App {
     pub fn new(tick_rate: f64, frame_rate: f64, adapter: Adapter) -> color_eyre::Result<Self> {
         let (action_tx, action_rx) = mpsc::unbounded_channel();
+        let adapter = Arc::new(adapter);
         Ok(Self {
             tick_rate,
             frame_rate,
@@ -58,7 +59,7 @@ impl App {
         let action_tx = self.action_tx.clone();
         loop {
             self.handle_events(&mut tui).await?;
-            self.handle_actions(&mut tui)?;
+            self.handle_actions(&mut tui).await?;
             if self.should_suspend {
                 tui.suspend()?;
                 action_tx.send(Action::Resume)?;
@@ -99,20 +100,20 @@ impl App {
         Ok(())
     }
 
-    fn handle_actions(&mut self, tui: &mut Tui) -> color_eyre::Result<()> {
+    async fn handle_actions(&mut self, tui: &mut Tui) -> color_eyre::Result<()> {
         while let Ok(action) = self.action_rx.try_recv() {
             if action != Action::Tick && action != Action::Render {
                 debug!("{action:?}");
             }
             match action {
                 Action::InitializeHome => {
-                    self.load_function_list();
                     self.load_disassembly();
-                    self.load_decompilation(String::from("entry"));
+                    self.load_function_list();
+                    self.load_decompilation("entry".to_string()).await;
                 }
                 Action::RequestDecompilation(ref addr) => {
                     if let Some(a) = addr.clone() {
-                        self.load_decompilation(a);
+                        self.load_decompilation(a).await;
                     }
                 }
                 Action::Tick => {
@@ -154,6 +155,15 @@ impl App {
         Ok(())
     }
 
+    async fn load_decompilation(&self, address: String) {
+        let adapter = self.adapter.clone();
+        let action_tx = self.action_tx.clone();
+        tokio::spawn(async move {
+            let res = adapter.get_decompilation(address).unwrap();
+            let _ = action_tx.send(Action::ResultDecompilation(Arc::new(res)));
+        });
+    }
+
     fn load_function_list(&self) {
         let res = self.adapter.get_function_list().unwrap();
         let _ = self
@@ -166,12 +176,5 @@ impl App {
         let _ = self
             .action_tx
             .send(Action::ResultDisassembly(Arc::new(res)));
-    }
-
-    fn load_decompilation(&self, address: String) {
-        let res = self.adapter.get_decompilation(address).unwrap();
-        let _ = self
-            .action_tx
-            .send(Action::ResultDecompilation(Arc::new(res)));
     }
 }
