@@ -2,7 +2,7 @@ mod decompilation_viewer;
 mod disassembly_viewer;
 mod function_list_viewer;
 
-use crossterm::event::KeyCode;
+use crossterm::event::{KeyCode, KeyModifiers};
 use decompilation_viewer::DecompilationViewer;
 use disassembly_viewer::DisassemblyViewer;
 use function_list_viewer::FunctionListViewer;
@@ -49,16 +49,11 @@ impl Component for Home {
     ) -> color_eyre::Result<Option<Action>> {
         let mut action: Option<Action> = None;
 
-        match self.focused_viewer {
-            Viewer::DecompilationViewer => {
-                self.decompilation_viewer.handle_editor_key_events(key);
-                return Ok(action);
-            }
-            _ => {}
-        }
+        let keycode = key.code;
+        let modifier = key.modifiers;
 
-        match key.code {
-            KeyCode::Char('h') => {
+        match (keycode, modifier) {
+            (KeyCode::Char('h'), KeyModifiers::CONTROL) => {
                 self.focused_viewer = match self.focused_viewer {
                     Viewer::DecompilationViewer => Viewer::DisassemblyViewer,
                     Viewer::DisassemblyViewer => Viewer::FunctionListViewer,
@@ -66,7 +61,7 @@ impl Component for Home {
                 };
             }
 
-            KeyCode::Char('l') => {
+            (KeyCode::Char('l'), KeyModifiers::CONTROL) => {
                 self.focused_viewer = match self.focused_viewer {
                     Viewer::FunctionListViewer => Viewer::DisassemblyViewer,
                     Viewer::DisassemblyViewer => Viewer::DecompilationViewer,
@@ -74,29 +69,32 @@ impl Component for Home {
                 }
             }
 
-            KeyCode::Char('j') => match self.focused_viewer {
-                Viewer::FunctionListViewer => {
+            (KeyCode::Char('j'), KeyModifiers::CONTROL) => {}
+            (KeyCode::Char('k'), KeyModifiers::CONTROL) => {}
+            _ => {}
+        }
+
+        match self.focused_viewer {
+            Viewer::DecompilationViewer => {
+                self.decompilation_viewer.handle_editor_key_events(key);
+            }
+
+            Viewer::FunctionListViewer => match (keycode, modifier) {
+                (KeyCode::Char('j'), KeyModifiers::NONE) => {
                     self.function_list_viewer.state.select_next();
                 }
-                _ => {}
-            },
-
-            KeyCode::Char('k') => match self.focused_viewer {
-                Viewer::FunctionListViewer => {
+                (KeyCode::Char('k'), KeyModifiers::NONE) => {
                     self.function_list_viewer.state.select_previous();
                 }
-                _ => {}
-            },
-
-            KeyCode::Enter => match self.focused_viewer {
-                Viewer::FunctionListViewer => {
+                (KeyCode::Enter, KeyModifiers::NONE) => {
                     let index = self.function_list_viewer.state.selected_mut().unwrap();
                     let address = self.function_list_viewer.get_function_address(index);
                     action = Some(Action::RequestDecompilation(Some(address)));
                 }
                 _ => {}
             },
-            _ => {}
+
+            Viewer::DisassemblyViewer => {}
         };
 
         Ok(action)
