@@ -1,8 +1,12 @@
 use std::sync::Arc;
 
-use ratatui::widgets::{Block, Borders, List, ListState};
+use ratatui::{
+    Frame,
+    layout::Rect,
+    widgets::{Block, Borders, List, ListState},
+};
 
-use crate::models::{Function, FunctionList};
+use crate::models::FunctionList;
 
 pub struct FunctionListViewer {
     function_list: Arc<FunctionList>,
@@ -31,8 +35,8 @@ impl FunctionListViewer {
         self.function_list.functions[index].address.clone()
     }
 
-    pub fn get_widget(&self) -> List<'static> {
-        List::new(
+    pub fn render(&mut self, frame: &mut Frame, area: Rect) -> color_eyre::Result<()> {
+        let l = List::new(
             self.function_list
                 .functions
                 .iter()
@@ -40,6 +44,9 @@ impl FunctionListViewer {
                 .collect::<Vec<String>>(),
         )
         .block(Block::default().title(" Functions ").borders(Borders::ALL))
-        .highlight_symbol("-> ")
+        .highlight_symbol("-> ");
+
+        frame.render_stateful_widget(l, area, &mut self.state);
+        Ok(())
     }
 }

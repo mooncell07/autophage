@@ -49,6 +49,14 @@ impl Component for Home {
     ) -> color_eyre::Result<Option<Action>> {
         let mut action: Option<Action> = None;
 
+        match self.focused_viewer {
+            Viewer::DecompilationViewer => {
+                self.decompilation_viewer.handle_editor_key_events(key);
+                return Ok(action);
+            }
+            _ => {}
+        }
+
         match key.code {
             KeyCode::Char('h') => {
                 self.focused_viewer = match self.focused_viewer {
@@ -115,19 +123,9 @@ impl Component for Home {
                 Constraint::Percentage(35),
             ]));
 
-        let function_list_widget = self.function_list_viewer.get_widget();
-
-        let disassembly_widget = self.disassembly_viewer.get_widget();
-
-        let decompilation_widget = self.decompilation_viewer.get_widget();
-        frame.render_stateful_widget(
-            &function_list_widget,
-            function_list_area,
-            &mut self.function_list_viewer.state,
-        );
-
-        frame.render_widget(&disassembly_widget, disassembly_area);
-        frame.render_widget(&decompilation_widget, remaining_area);
+        let _ = self.function_list_viewer.render(frame, function_list_area);
+        let _ = self.disassembly_viewer.render(frame, disassembly_area);
+        let _ = self.decompilation_viewer.render(frame, remaining_area);
 
         Ok(())
     }

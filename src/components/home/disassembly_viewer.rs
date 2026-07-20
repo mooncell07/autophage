@@ -2,11 +2,11 @@ use std::sync::Arc;
 
 use opaline::{Theme, load_by_name};
 use ratatui::{
-    layout::Constraint,
-    style::Modifier,
+    Frame,
+    layout::{Constraint, Rect},
     symbols::border,
     text::Line,
-    widgets::{Block, Cell, List, Row, Table},
+    widgets::{Block, Cell, Row, Table},
 };
 
 use crate::models::Disassembly;
@@ -33,7 +33,7 @@ impl DisassemblyViewer {
         self.disassembly = Arc::clone(disassembly);
     }
 
-    pub fn get_widget(&self) -> Table<'_> {
+    pub fn render(&mut self, frame: &mut Frame, area: Rect) -> color_eyre::Result<()> {
         let title = Line::from(" Disassembly ");
         let block = Block::bordered().title(title).border_set(border::PLAIN);
 
@@ -76,6 +76,9 @@ impl DisassemblyViewer {
             Constraint::Length(5),
             Constraint::Length(5),
         ];
-        Table::new(rows, widths).block(block).column_spacing(4)
+        let table = Table::new(rows, widths).block(block).column_spacing(4);
+
+        frame.render_widget(table, area);
+        Ok(())
     }
 }
