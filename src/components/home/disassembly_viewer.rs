@@ -1,9 +1,12 @@
 use std::sync::Arc;
 
+use super::viewer::Viewer;
+
 use opaline::{Theme, load_by_name};
 use ratatui::{
     Frame,
     layout::{Constraint, Rect},
+    style::{Color, Style},
     symbols::border,
     text::Line,
     widgets::{Block, Cell, Row, Table},
@@ -33,9 +36,22 @@ impl DisassemblyViewer {
         self.disassembly = Arc::clone(disassembly);
     }
 
-    pub fn render(&mut self, frame: &mut Frame, area: Rect) -> color_eyre::Result<()> {
+    pub fn render(
+        &mut self,
+        frame: &mut Frame,
+        area: Rect,
+        focus: &Viewer,
+    ) -> color_eyre::Result<()> {
         let title = Line::from(" Disassembly ");
-        let block = Block::bordered().title(title).border_set(border::PLAIN);
+
+        let border_color = match focus {
+            Viewer::DisassemblyViewer => Color::Magenta,
+            _ => Color::Reset,
+        };
+        let block = Block::bordered()
+            .title(title)
+            .border_set(border::PLAIN)
+            .border_style(Style::default().fg(border_color));
 
         let rows: Vec<Row> = self
             .disassembly

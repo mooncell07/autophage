@@ -15,6 +15,7 @@ use ratatui::{
 use syntect::highlighting::Theme;
 use syntect::highlighting::ThemeSet;
 
+use super::viewer::Viewer;
 use crate::models::Decompilation;
 
 pub struct DecompilationViewer {
@@ -53,10 +54,23 @@ impl DecompilationViewer {
         self.event_handler.on_key_event(key_event, &mut self.state);
     }
 
-    pub fn render(&mut self, frame: &mut Frame, area: Rect) -> color_eyre::Result<()> {
+    pub fn render(
+        &mut self,
+        frame: &mut Frame,
+        area: Rect,
+        focus: &Viewer,
+    ) -> color_eyre::Result<()> {
         let title = Line::from(" Decompilation ");
 
-        let block = Block::bordered().title(title).border_set(border::PLAIN);
+        let border_color = match focus {
+            Viewer::DecompilationViewer => Color::Magenta,
+            _ => Color::Reset,
+        };
+
+        let block = Block::bordered()
+            .title(title)
+            .border_set(border::PLAIN)
+            .border_style(Style::default().fg(border_color));
         let theme = EditorTheme::default()
             .block(block)
             .base(Style::default().bg(Color::Reset))

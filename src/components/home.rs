@@ -1,26 +1,19 @@
 mod decompilation_viewer;
 mod disassembly_viewer;
 mod function_list_viewer;
+mod viewer;
 
 use crossterm::event::{KeyCode, KeyModifiers};
 use decompilation_viewer::DecompilationViewer;
 use disassembly_viewer::DisassemblyViewer;
 use function_list_viewer::FunctionListViewer;
+use viewer::Viewer;
 
 use ratatui::{prelude::*, widgets::*};
 use tokio::sync::mpsc::UnboundedSender;
 
 use super::Component;
 use crate::action::Action;
-
-#[derive(Default, Debug)]
-pub enum Viewer {
-    FunctionListViewer,
-    DecompilationViewer,
-
-    #[default]
-    DisassemblyViewer,
-}
 
 #[derive(Default)]
 pub struct Home {
@@ -54,19 +47,11 @@ impl Component for Home {
 
         match (keycode, modifier) {
             (KeyCode::Char('h'), KeyModifiers::CONTROL) => {
-                self.focused_viewer = match self.focused_viewer {
-                    Viewer::DecompilationViewer => Viewer::DisassemblyViewer,
-                    Viewer::DisassemblyViewer => Viewer::FunctionListViewer,
-                    Viewer::FunctionListViewer => Viewer::FunctionListViewer,
-                };
+                self.focused_viewer = Viewer::move_left(&self.focused_viewer);
             }
 
             (KeyCode::Char('l'), KeyModifiers::CONTROL) => {
-                self.focused_viewer = match self.focused_viewer {
-                    Viewer::FunctionListViewer => Viewer::DisassemblyViewer,
-                    Viewer::DisassemblyViewer => Viewer::DecompilationViewer,
-                    Viewer::DecompilationViewer => Viewer::DecompilationViewer,
-                }
+                self.focused_viewer = Viewer::move_right(&self.focused_viewer);
             }
 
             (KeyCode::Char('j'), KeyModifiers::CONTROL) => {}
@@ -99,6 +84,7 @@ impl Component for Home {
 
         Ok(action)
     }
+
     fn update(&mut self, action: Action) -> color_eyre::Result<Option<Action>> {
         match action {
             Action::ResultFunctionList(fl) => self.function_list_viewer.update(&fl),
@@ -121,9 +107,15 @@ impl Component for Home {
                 Constraint::Percentage(35),
             ]));
 
-        let _ = self.function_list_viewer.render(frame, function_list_area);
-        let _ = self.disassembly_viewer.render(frame, disassembly_area);
-        let _ = self.decompilation_viewer.render(frame, remaining_area);
+        let _ = self
+            .function_list_viewer
+            .render(frame, function_list_area, &self.focused_viewer);
+        let _ = self
+            .disassembly_viewer
+            .render(frame, disassembly_area, &self.focused_viewer);
+        let _ = self
+            .decompilation_viewer
+            .render(frame, remaining_area, &self.focused_viewer);
 
         Ok(())
     }
