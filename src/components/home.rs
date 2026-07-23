@@ -79,7 +79,21 @@ impl Component for Home {
                 _ => {}
             },
 
-            Viewer::DisassemblyViewer => {}
+            Viewer::DisassemblyViewer => match (keycode, modifier) {
+                (KeyCode::Char('h'), KeyModifiers::NONE) => {
+                    self.disassembly_viewer.state.scroll_left();
+                }
+                (KeyCode::Char('j'), KeyModifiers::NONE) => {
+                    self.disassembly_viewer.state.scroll_down();
+                }
+                (KeyCode::Char('k'), KeyModifiers::NONE) => {
+                    self.disassembly_viewer.state.scroll_up();
+                }
+                (KeyCode::Char('l'), KeyModifiers::NONE) => {
+                    self.disassembly_viewer.state.scroll_right();
+                }
+                _ => {}
+            },
         };
 
         Ok(action)

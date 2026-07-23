@@ -172,7 +172,7 @@ impl App {
     }
 
     fn load_disassembly(&self) {
-        let res = self.adapter.get_disassembly("entry", 10).unwrap();
+        let res = self.adapter.get_disassembly("entry", 200).unwrap();
         let _ = self
             .action_tx
             .send(Action::ResultDisassembly(Arc::new(res)));

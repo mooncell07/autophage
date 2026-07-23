@@ -5,18 +5,19 @@ use super::viewer::Viewer;
 use opaline::{Theme, load_by_name};
 use ratatui::{
     Frame,
-    layout::{Constraint, Rect},
+    layout::{self, Constraint, Rect},
     style::{Color, Style},
     symbols::border,
-    text::Line,
-    widgets::{Block, Cell, Row, Table},
+    text::{Line, Span, Text},
+    widgets::{Block, Cell, Paragraph, Row, Table},
 };
+use tui_scrollview::{ScrollView, ScrollViewState};
 
 use crate::models::Disassembly;
 
 pub struct DisassemblyViewer {
-    theme: Theme,
     disassembly: Arc<Disassembly>,
+    pub state: ScrollViewState,
 }
 
 impl Default for DisassemblyViewer {
@@ -28,8 +29,8 @@ impl Default for DisassemblyViewer {
 impl DisassemblyViewer {
     pub fn new() -> Self {
         return Self {
-            theme: load_by_name("rose-pine").unwrap(),
             disassembly: Disassembly::default().into(),
+            state: ScrollViewState::new(),
         };
     }
     pub fn update(&mut self, disassembly: &Arc<Disassembly>) {
@@ -53,48 +54,41 @@ impl DisassemblyViewer {
             .border_set(border::PLAIN)
             .border_style(Style::default().fg(border_color));
 
-        let rows: Vec<Row> = self
+        let lines: Vec<Line> = self
             .disassembly
             .instructions
             .iter()
             .map(|instr| {
-                Row::new(vec![
-                    Cell::from(self.theme.span("primary", instr.address.as_str())),
-                    Cell::from(
-                        self.theme.span(
-                            "line_number",
-                            instr
-                                .bytes
-                                .as_bytes()
-                                .chunks(2)
-                                .map(|chunk| std::str::from_utf8(chunk).unwrap())
-                                .collect::<Vec<&str>>()
-                                .join(" "),
-                        ),
+                Line::from(vec![
+                    Span::raw(instr.address.to_string()),
+                    Span::raw(
+                        instr
+                            .bytes
+                            .as_bytes()
+                            .chunks(2)
+                            .map(|chunk| std::str::from_utf8(chunk).unwrap())
+                            .collect::<Vec<&str>>()
+                            .join(" ")
+                            .to_string(),
                     ),
-                    Cell::from(self.theme.span("info_style", instr.mnemonic.as_str())),
-                    Cell::from(self.theme.span("warning_style", instr.operands.join(","))),
+                    Span::raw(instr.mnemonic.to_string()),
+                    Span::raw(instr.operands.join(",").to_string()),
                 ])
             })
             .collect();
 
-        let max_address_len = self
-            .disassembly
-            .instructions
-            .iter()
-            .map(|instr| instr.address.len())
-            .max()
-            .unwrap_or(15);
+        let inner = block.inner(area);
 
-        let widths = [
-            Constraint::Length(max_address_len as u16),
-            Constraint::Length(15),
-            Constraint::Length(5),
-            Constraint::Length(5),
-        ];
-        let table = Table::new(rows, widths).block(block).column_spacing(4);
+        frame.render_widget(block, area);
 
-        frame.render_widget(table, area);
+        let para = Paragraph::new(lines);
+        let virtual_size = layout::Size::new(inner.width, self.disassembly.count as u16);
+
+        let mut scroll_view = ScrollView::new(virtual_size);
+        let canvas_target = Rect::new(0, 0, virtual_size.width, virtual_size.height);
+        scroll_view.render_widget(para, canvas_target);
+
+        frame.render_stateful_widget(&scroll_view, inner, &mut self.state);
         Ok(())
     }
 }
