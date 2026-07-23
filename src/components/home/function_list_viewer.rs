@@ -1,5 +1,6 @@
 use std::sync::Arc;
 
+use crossterm::event::{KeyCode, KeyEvent, KeyModifiers};
 use ratatui::{
     Frame,
     layout::Rect,
@@ -9,7 +10,7 @@ use ratatui::{
     widgets::{Block, Borders, List, ListState},
 };
 
-use crate::{components::home::viewer::Viewer, models::FunctionList};
+use crate::{action::Action, components::home::viewer::Viewer, models::FunctionList};
 
 pub struct FunctionListViewer {
     function_list: Arc<FunctionList>,
@@ -32,6 +33,27 @@ impl FunctionListViewer {
 
     pub fn update(&mut self, function_list: &Arc<FunctionList>) {
         self.function_list = Arc::clone(function_list);
+    }
+
+    pub fn handle_key_events(&mut self, key: KeyEvent) -> Option<Action> {
+        let mut action: Option<Action> = None;
+
+        match (key.code, key.modifiers) {
+            (KeyCode::Char('j') | KeyCode::Down, KeyModifiers::NONE) => {
+                self.state.select_next();
+            }
+            (KeyCode::Char('k') | KeyCode::Up, KeyModifiers::NONE) => {
+                self.state.select_previous();
+            }
+            (KeyCode::Enter, KeyModifiers::NONE) => {
+                let index = self.state.selected_mut().unwrap();
+                let address = self.get_function_address(index);
+                action = Some(Action::RequestDecompilation(Some(address)));
+            }
+            _ => (),
+        }
+
+        action
     }
 
     pub fn get_function_address(&self, index: usize) -> String {

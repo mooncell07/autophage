@@ -2,6 +2,7 @@ use std::sync::Arc;
 
 use super::viewer::Viewer;
 
+use crossterm::event::{KeyCode, KeyEvent, KeyModifiers};
 use opaline::{Theme, load_by_name};
 use ratatui::{
     Frame,
@@ -13,7 +14,7 @@ use ratatui::{
 };
 use tui_scrollview::{ScrollView, ScrollViewState};
 
-use crate::models::Disassembly;
+use crate::{action::Action, models::Disassembly};
 
 pub struct DisassemblyViewer {
     disassembly: Arc<Disassembly>,
@@ -35,6 +36,26 @@ impl DisassemblyViewer {
     }
     pub fn update(&mut self, disassembly: &Arc<Disassembly>) {
         self.disassembly = Arc::clone(disassembly);
+    }
+
+    pub fn handle_key_events(&mut self, key: KeyEvent) -> Option<Action> {
+        match (key.code, key.modifiers) {
+            (KeyCode::Char('h') | KeyCode::Left, KeyModifiers::NONE) => {
+                self.state.scroll_left();
+            }
+            (KeyCode::Char('j') | KeyCode::Down, KeyModifiers::NONE) => {
+                self.state.scroll_down();
+            }
+            (KeyCode::Char('k') | KeyCode::Up, KeyModifiers::NONE) => {
+                self.state.scroll_up();
+            }
+            (KeyCode::Char('l') | KeyCode::Right, KeyModifiers::NONE) => {
+                self.state.scroll_right();
+            }
+            _ => {}
+        }
+
+        None
     }
 
     pub fn render(

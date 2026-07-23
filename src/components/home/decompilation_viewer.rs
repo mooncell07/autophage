@@ -16,7 +16,7 @@ use syntect::highlighting::Theme;
 use syntect::highlighting::ThemeSet;
 
 use super::viewer::Viewer;
-use crate::models::Decompilation;
+use crate::{action::Action, models::Decompilation};
 
 pub struct DecompilationViewer {
     decompilation: Arc<Decompilation>,
@@ -50,8 +50,9 @@ impl DecompilationViewer {
         self.decompilation = decompilation;
     }
 
-    pub fn handle_editor_key_events(&mut self, key_event: KeyEvent) {
+    pub fn handle_key_events(&mut self, key_event: KeyEvent) -> Option<Action> {
         self.event_handler.on_key_event(key_event, &mut self.state);
+        None
     }
 
     pub fn render(
